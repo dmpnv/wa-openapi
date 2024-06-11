@@ -1,0 +1,352 @@
+openapi: 3.0.0
+info:
+  title: WhatsApp Cloud API
+  description: API for sending messages via WhatsApp Cloud
+  version: 1.0.0
+servers:
+  - url: https://graph.facebook.com/v12.0
+    description: Main WhatsApp Cloud API server
+
+paths:
+  /{phone_number_id}/messages:
+    post:
+      summary: Send a message
+      description: Sends a message from the specified phone number.
+      parameters:
+        - in: path
+          name: phone_number_id
+          required: true
+          schema:
+            type: string
+          description: The ID of the phone number from which to send the message.
+        - in: query
+          name: access_token
+          required: true
+          schema:
+            type: string
+          description: Access token for authenticating the request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageObject'
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messaging_product:
+                    type: string
+                    example: whatsapp
+                  contacts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        input:
+                          type: string
+                        wa_id:
+                          type: string
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal Server Error
+
+components:
+  schemas:
+    MessageObject:
+      type: object
+      properties:
+        messaging_product:
+          type: string
+          description: Messaging service used for the request.
+          example: whatsapp
+        to:
+          type: string
+          description: WhatsApp ID or phone number of the customer you want to send a message to.
+        type:
+          type: string
+          description: Type of message to be sent.
+          enum: [text, image, document, audio, contacts, location, interactive, template]
+        text:
+          type: object
+          description: Text message content (required if type is 'text').
+          properties:
+            body:
+              type: string
+              description: Content of the text message.
+        image:
+          type: object
+          description: Image message content (required if type is 'image').
+          properties:
+            link:
+              type: string
+              description: URL of the image.
+        document:
+          type: object
+          description: Document message content (required if type is 'document').
+          properties:
+            link:
+              type: string
+              description: URL of the document.
+        audio:
+          type: object
+          description: Audio message content (required if type is 'audio').
+          properties:
+            link:
+              type: string
+              description: URL of the audio.
+        contacts:
+          type: array
+          description: Contacts message content (required if type is 'contacts').
+          items:
+            type: object
+            properties:
+              addresses:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    street:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      type: string
+                    zip:
+                      type: string
+                    country:
+                      type: string
+                    country_code:
+                      type: string
+                    type:
+                      type: string
+                      enum: [HOME, WORK]
+              birthday:
+                type: string
+                format: date
+              emails:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                    type:
+                      type: string
+                      enum: [HOME, WORK]
+              name:
+                type: object
+                properties:
+                  formatted_name:
+                    type: string
+                    description: Full name of the contact.
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  middle_name:
+                    type: string
+                  suffix:
+                    type: string
+                  prefix:
+                    type: string
+              org:
+                type: object
+                properties:
+                  company:
+                    type: string
+                  department:
+                    type: string
+                  title:
+                    type: string
+              phones:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    phone:
+                      type: string
+                    type:
+                      type: string
+                      enum: [CELL, MAIN, IPHONE, HOME, WORK]
+                    wa_id:
+                      type: string
+              urls:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    url:
+                      type: string
+                    type:
+                      type: string
+                      enum: [HOME, WORK]
+        location:
+          type: object
+          description: Location message content (required if type is 'location').
+          properties:
+            latitude:
+              type: number
+              format: float
+            longitude:
+              type: number
+              format: float
+            name:
+              type: string
+            address:
+              type: string
+        interactive:
+          type: object
+          description: Interactive message content (required if type is 'interactive').
+          properties:
+            type:
+              type: string
+              enum: [button, list, product, product_list, flow]
+            header:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [text, image, video, document]
+                text:
+                  type: string
+                  description: Text for the header.
+                media:
+                  type: object
+                  properties:
+                    link:
+                      type: string
+                      description: URL of the media.
+            body:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: Text content of the body.
+            footer:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: Text content of the footer.
+            action:
+              type: object
+              properties:
+                buttons:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum: [reply]
+                      reply:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          title:
+                            type: string
+                catalog_id:
+                  type: string
+                product_retailer_id:
+                  type: string
+                sections:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                      product_items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            product_retailer_id:
+                              type: string
+        template:
+          type: object
+          description: Template message content (required if type is 'template').
+          properties:
+            name:
+              type: string
+            language:
+              type: object
+              properties:
+                code:
+                  type: string
+                policy:
+                  type: string
+                  enum: [deterministic]
+            components:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum: [header, body, button]
+                  sub_type:
+                    type: string
+                    enum: [quick_reply, url]
+                  index:
+                    type: integer
+                  parameters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: [text, image, video, document, currency, date_time]
+                        text:
+                          type: string
+                        image:
+                          type: object
+                          properties:
+                            link:
+                              type: string
+                        video:
+                          type: object
+                          properties:
+                            link:
+                              type: string
+                        document:
+                          type: object
+                          properties:
+                            link:
+                              type: string
+                        currency:
+                          type: object
+                          properties:
+                            fallback_value:
+                              type: string
+                            code:
+                              type: string
+                            amount_1000:
+                              type: integer
+                        date_time:
+                          type: object
+                          properties:
+                            fallback_value:
+                              type: string
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
